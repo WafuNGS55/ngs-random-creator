@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NGS乱数キャラクリメーカー</title>
+<meta name="description" content="PSO2 ニュージェネシスのキャラクリを乱数で決める非公式ツール。髪色・髪型・ベースウェアをランダムで出して、結果をXでシェア！ #乱数キャラクリ">
+<meta property="og:title" content="NGS乱数キャラクリメーカー">
+<meta property="og:description" content="髪色・髪型・ベースウェアを乱数で決めよう！ #乱数キャラクリ">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef4f8; --panel:#ffffff; --ink:#1b2a38; --sub:#6b7c8c;
+  --cyan:#00b4e6; --cyan-d:#007fb0; --navy:#14283c; --line:#cfdbe5; --warn:#e8453c;
+  --cut:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; color:var(--ink); font-family:"Noto Sans JP",system-ui,sans-serif; line-height:1.7;
+  background:
+    linear-gradient(rgba(0,180,230,.06) 1px,transparent 1px) 0 0/32px 32px,
+    linear-gradient(90deg,rgba(0,180,230,.06) 1px,transparent 1px) 0 0/32px 32px,
+    radial-gradient(ellipse at 80% -10%,#d7f1fb 0,transparent 55%),
+    radial-gradient(ellipse at 0% 100%,#e3ecf7 0,transparent 50%),
+    var(--bg);
+  min-height:100vh;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px 48px}
+
+/* header */
+header{background:var(--navy);color:#fff;border-bottom:3px solid var(--cyan);position:relative;overflow:hidden}
+header::after{content:"";position:absolute;right:-60px;top:-40px;width:220px;height:220px;border:2px solid rgba(0,180,230,.35);transform:rotate(45deg)}
+header::before{content:"";position:absolute;right:20px;top:20px;width:120px;height:120px;border:1px solid rgba(255,255,255,.2);transform:rotate(45deg)}
+header .wrap{padding-top:28px;padding-bottom:24px;position:relative;z-index:1}
+.eyebrow{font-family:Orbitron,sans-serif;font-size:.75rem;letter-spacing:.3em;color:var(--cyan)}
+h1{margin:4px 0 0;font-size:clamp(1.6rem,5vw,2.4rem);font-weight:700;letter-spacing:.05em}
+h1 small{display:block;font-family:Orbitron,sans-serif;font-size:.7rem;font-weight:500;letter-spacing:.25em;color:#9fc4d8;margin-top:2px}
+
+/* section title */
+.sec-title{display:flex;align-items:center;gap:10px;margin:28px 0 10px;font-weight:700;font-size:1.1rem;letter-spacing:.08em}
+.sec-title::before{content:"";width:6px;height:22px;background:var(--cyan)}
+.sec-title .en{font-family:Orbitron,sans-serif;font-size:.7rem;color:var(--cyan-d);letter-spacing:.2em;font-weight:500}
+
+/* panel */
+.panel{
+  background:var(--panel);border:1px solid var(--line);position:relative;padding:18px 20px;
+  clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)));
+  filter:drop-shadow(0 2px 0 rgba(20,40,60,.05));
+}
+.panel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--cyan),transparent)}
+.rules ol{margin:6px 0 0;padding-left:1.3em}
+.rules li{margin:4px 0}
+.rules .note{margin-top:10px;font-size:.88rem;color:var(--sub)}
+.tag{display:inline-block;font-weight:700;color:#fff;background:var(--cyan-d);padding:0 8px;margin-right:4px;font-size:.85rem}
+
+/* settings */
+.setting-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:620px){.setting-grid{grid-template-columns:1fr}}
+.setting{border:2px solid var(--cyan);background:#f4fbfe;padding:12px 14px}
+.setting h3{margin:0 0 8px;font-size:1rem}
+.setting .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.setting label{font-size:.85rem;color:var(--sub)}
+input[type=number]{
+  width:84px;font:700 1.3rem Orbitron,sans-serif;text-align:center;padding:6px 4px;color:var(--navy);
+  border:2px solid var(--navy);background:#fff;border-radius:0;outline:none;
+}
+input[type=number]:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,180,230,.25)}
+.dash{font-weight:700;font-size:1.3rem}
+.hint{font-size:.8rem;color:var(--sub);margin:6px 0 0}
+.error{color:var(--warn);font-size:.85rem;font-weight:700;min-height:1.2em;margin-top:6px}
+
+/* buttons */
+.btn{
+  font:700 1rem "Noto Sans JP",sans-serif;letter-spacing:.08em;cursor:pointer;border:0;color:#fff;
+  background:var(--navy);padding:10px 22px;position:relative;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  transition:background .15s,transform .05s;
+}
+.btn:hover{background:var(--cyan-d)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--cyan);color:#04202e}
+.btn.primary:hover{background:#2bcaf5}
+.btn.x{background:#000}
+.btn.x:hover{background:#333}
+.btn.ghost{background:#fff;color:var(--navy);box-shadow:inset 0 0 0 2px var(--navy)}
+.btn.ghost:hover{background:#e6f6fc}
+.btn.small{padding:6px 14px;font-size:.85rem}
+.big-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+
+/* result cards */
+.cards{display:grid;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--cyan);padding:16px 18px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.card-head h3{margin:0;font-size:1.05rem}
+.card-head h3 span{font-family:Orbitron,sans-serif;color:var(--cyan-d);margin-right:8px}
+.reroll-box{display:flex;align-items:center;gap:10px}
+.count{font-size:.85rem;color:var(--sub)}
+.count b{font-family:Orbitron,sans-serif;font-size:1.2rem;color:var(--navy);margin:0 2px}
+
+.hair-body{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.swatch{width:140px;height:100px;border:2px solid var(--navy);box-shadow:inset 0 0 0 3px #fff;flex:none}
+.rgb{font-family:Orbitron,sans-serif}
+.rgb .hex{font-size:1.6rem;font-weight:700;letter-spacing:.05em}
+.rgb .ch{display:flex;gap:14px;margin-top:2px;font-size:1rem}
+.ch span b{display:inline-block;min-width:2.2em;text-align:right}
+.ch .r b{color:#d0342c}.ch .g b{color:#2a9a3f}.ch .b b{color:#2461d6}
+
+.pick-body{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.result-text{font-family:Orbitron,"Noto Sans JP",sans-serif}
+.result-text .page{font-size:1.7rem;font-weight:700}
+.result-text .pos{font-size:1.15rem;margin-top:2px}
+.result-text .pos b{font-size:1.5rem;color:var(--cyan-d)}
+.mini{display:grid;grid-template-columns:repeat(5,22px);gap:3px;padding:6px;background:#eaf2f7;border:1px solid var(--line)}
+.mini i{display:block;width:22px;height:22px;background:#fff;border:1px solid #c5d4df}
+.mini i.on{background:var(--cyan);border-color:var(--navy);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--cyan),0 0 10px var(--cyan);animation:pulse 1s ease-in-out 2}
+@keyframes pulse{50%{transform:scale(1.15)}}
+.rolling{opacity:.55}
+
+/* total */
+.total{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:.95rem}
+.total b{font-family:Orbitron,sans-serif;font-size:1.3rem;color:var(--cyan-d)}
+
+/* history */
+.history{list-style:none;margin:0;padding:0;font-size:.85rem}
+.history li{padding:6px 0;border-bottom:1px dashed var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.history .dot{width:16px;height:16px;border:1px solid var(--navy);flex:none}
+.history .n{font-family:Orbitron,sans-serif;color:var(--cyan-d);font-weight:700}
+.empty{color:var(--sub);font-size:.9rem}
+
+/* footer */
+footer{margin-top:40px;background:var(--navy);color:#c4d4e0;font-size:.8rem;border-top:3px solid var(--cyan)}
+footer .wrap{padding-top:18px;padding-bottom:22px}
+footer strong{color:#fff}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,40px);background:var(--navy);color:#fff;padding:10px 20px;border-left:4px solid var(--cyan);opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">UNOFFICIAL FAN TOOL</div>
+    <h1>NGS乱数キャラクリメーカー<small>RANDOM CHARACTER CREATION</small></h1>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="sec-title">ルール<span class="en">RULE</span></div>
+  <section class="panel rules">
+    <p style="margin:0">サイコロ任せでキャラクリする遊びです。次の3つを<strong>ランダム</strong>で決めて、そのとおりにキャラクリしてみましょう！</p>
+    <ol>
+      <li><span class="tag">①</span><strong>髪色</strong>：R・G・B をそれぞれ 0〜255 の乱数で決定</li>
+      <li><span class="tag">②</span><strong>髪型</strong>：指定した<strong>ページ範囲</strong>の中から、ページ・縦(1〜5)・横(1〜5)を決定</li>
+      <li><span class="tag">③</span><strong>ベースウェア・セットウェア</strong>：指定した<strong>ページ範囲</strong>の中から、ページ・縦(1〜5)・横(1〜5)を決定</li>
+    </ol>
+    <p class="note">※ ②③は持っている数が人によって違うため、<strong>あなたのページ範囲を下の入力欄に入れてください</strong>。（例：3〜14 ／ 1〜5）<br>
+    ※ 1ページは 5×5 マスとして計算します。縦は上から、横は左から数えてください。<br>
+    ※ 結果に納得いかなくても…？ リロールはできますが、回数はしっかりカウントされます！</p>
+  </section>
+
+  <div class="sec-title">入力<span class="en">INPUT</span></div>
+  <section class="panel">
+    <p style="margin:0 0 12px;font-weight:700">▼ あなたのページ範囲を入力してください</p>
+    <div class="setting-grid">
+      <div class="setting">
+        <h3><span class="tag">②</span>髪型のページ範囲</h3>
+        <div class="row">
+          <label for="hairMin">開始</label><input id="hairMin" type="number" min="1" max="99" value="1" inputmode="numeric">
+          <span class="dash">〜</span>
+          <label for="hairMax">終了</label><input id="hairMax" type="number" min="1" max="99" value="5" inputmode="numeric">
+          <label>ページ</label>
+        </div>
+        <p class="hint">例：3〜14 ／ 1〜5　（1ページだけなら同じ数字）</p>
+        <div class="error" id="hairErr"></div>
+      </div>
+      <div class="setting">
+        <h3><span class="tag">③</span>ベースウェア・セットウェアのページ範囲</h3>
+        <div class="row">
+          <label for="wearMin">開始</label><input id="wearMin" type="number" min="1" max="99" value="1" inputmode="numeric">
+          <span class="dash">〜</span>
+          <label for="wearMax">終了</label><input id="wearMax" type="number" min="1" max="99" value="5" inputmode="numeric">
+          <label>ページ</label>
+        </div>
+        <p class="hint">例：3〜14 ／ 1〜5　（1ページだけなら同じ数字）</p>
+        <div class="error" id="wearErr"></div>
+      </div>
+    </div>
+    <div class="big-actions">
+      <button class="btn primary" id="rollAll">▶ 全部ふる！</button>
+    </div>
+  </section>
+
+  <div class="sec-title">結果<span class="en">RESULT</span></div>
+  <div class="cards">
+    <article class="card" id="cardHair">
+      <div class="card-head">
+        <h3><span>01</span>髪色</h3>
+        <div class="reroll-box">
+          <span class="count">リロール <b id="cHair">0</b> 回</span>
+          <button class="btn small" data-roll="hair">リロール</button>
+        </div>
+      </div>
+      <div class="hair-body" id="bodyHair">
+        <div class="swatch" id="swatch"></div>
+        <div class="rgb">
+          <div class="hex" id="hex">#------</div>
+          <div class="ch"><span class="r">R <b id="vR">-</b></span><span class="g">G <b id="vG">-</b></span><span class="b">B <b id="vB">-</b></span></div>
+          <button class="btn ghost small" id="copyHex" style="margin-top:8px">カラーコードをコピー</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" id="cardStyle">
+      <div class="card-head">
+        <h3><span>02</span>髪型</h3>
+        <div class="reroll-box">
+          <span class="count">リロール <b id="cStyle">0</b> 回</span>
+          <button class="btn small" data-roll="style">リロール</button>
+        </div>
+      </div>
+      <div class="pick-body" id="bodyStyle"></div>
+    </article>
+
+    <article class="card" id="cardWear">
+      <div class="card-head">
+        <h3><span>03</span>ベースウェア・セットウェア</h3>
+        <div class="reroll-box">
+          <span class="count">リロール <b id="cWear">0</b> 回</span>
+          <button class="btn small" data-roll="wear">リロール</button>
+        </div>
+      </div>
+      <div class="pick-body" id="bodyWear"></div>
+    </article>
+  </div>
+
+  <div class="total">
+    <div>合計リロール回数　<b id="cTotal">0</b> 回</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn ghost small" id="copyText">結果をコピー</button>
+      <button class="btn x" id="shareX">𝕏 で結果をシェア</button>
+    </div>
+  </div>
+
+  <div class="sec-title">履歴<span class="en">HISTORY</span></div>
+  <section class="panel">
+    <ul class="history" id="history"></ul>
+    <p class="empty" id="histEmpty">まだ履歴はありません。</p>
+    <button class="btn ghost small" id="clearHist" style="margin-top:10px">履歴とカウントをリセット</button>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p style="margin:0 0 6px"><strong>【ご注意】</strong>本サイトは有志による<strong>非公式のファンツール</strong>です。株式会社セガおよび『ファンタシースターオンライン2 ニュージェネシス』の公式とは一切関係ありません。</p>
+    <p style="margin:0 0 6px">『ファンタシースターオンライン2 ニュージェネシス』に関する名称・画像・その他の権利は、すべて<strong>株式会社セガ</strong>に帰属します。</p>
+    <p style="margin:0">© SEGA　/　NGS乱数キャラクリメーカー（非公式）</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  // ★ GitHub Pages 公開後、固定したいURLがあればここに入れる（空なら現在のURLを使用）
+  const SITE_URL = "";
+  const HASHTAG  = "#乱数キャラクリ";
+  const TITLE    = "NGS乱数キャラクリメーカー";
+  const STORE    = "ngsRandomCharaCreate.v1";
+
+  const $ = id => document.getElementById(id);
+  const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+
+  const state = {
+    hair:  { r:0, g:0, b:0, n:0 },
+    style: { page:0, row:0, col:0, n:0 },
+    wear:  { page:0, row:0, col:0, n:0 },
+    history: []
+  };
+
+  /* ---------- 保存 ---------- */
+  function save(){
+    try{
+      localStorage.setItem(STORE, JSON.stringify({
+        hairMin:$("hairMin").value, hairMax:$("hairMax").value,
+        wearMin:$("wearMin").value, wearMax:$("wearMax").value,
+        counts:{hair:state.hair.n, style:state.style.n, wear:state.wear.n},
+        history:state.history
+      }));
+    }catch(e){}
+  }
+  function load(){
+    try{
+      const d = JSON.parse(localStorage.getItem(STORE) || "null");
+      if(!d) return;
+      ["hairMin","hairMax","wearMin","wearMax"].forEach(k => { if(d[k]) $(k).value = d[k]; });
+      if(d.counts){ state.hair.n=d.counts.hair||0; state.style.n=d.counts.style||0; state.wear.n=d.counts.wear||0; }
+      if(Array.isArray(d.history)) state.history = d.history.slice(0,10);
+    }catch(e){}
+  }
+
+  /* ---------- 入力検証 ---------- */
+  function readRange(minId, maxId, errId){
+    let a = parseInt($(minId).value, 10), b = parseInt($(maxId).value, 10);
+    const err = $(errId);
+    if(!Number.isFinite(a) || !Number.isFinite(b) || a < 1 || b < 1 || a > 99 || b > 99){
+      err.textContent = "1〜99の整数で入力してください";
+      return null;
+    }
+    if(a > b){ [a, b] = [b, a]; $(minId).value = a; $(maxId).value = b; }
+    err.textContent = "";
+    return [a, b];
+  }
+
+  /* ---------- 描画 ---------- */
+  function textColor(r,g,b){ return (r*299+g*587+b*114)/1000 > 150 ? "#000" : "#fff"; }
+  const hex2 = n => n.toString(16).padStart(2,"0").toUpperCase();
+  const hexOf = h => "#" + hex2(h.r) + hex2(h.g) + hex2(h.b);
+
+  function renderHair(){
+    const h = state.hair;
+    $("swatch").style.background = `rgb(${h.r},${h.g},${h.b})`;
+    $("hex").textContent = hexOf(h);
+    $("vR").textContent = h.r; $("vG").textContent = h.g; $("vB").textContent = h.b;
+    $("cHair").textContent = h.n;
+  }
+  function pickHTML(p){
+    if(!p.page) return '<span class="empty">まだ出していません</span>';
+    let cells = "";
+    for(let r=1;r<=5;r++) for(let c=1;c<=5;c++) cells += `<i class="${r===p.row&&c===p.col?'on':''}"></i>`;
+    return `<div class="mini" aria-hidden="true">${cells}</div>
+      <div class="result-text">
+        <div class="page">${p.page}<span style="font-size:1rem"> ページ目</span></div>
+        <div class="pos">縦 <b>${p.row}</b> ／ 横 <b>${p.col}</b></div>
+      </div>`;
+  }
+  function renderStyle(){ $("bodyStyle").innerHTML = pickHTML(state.style); $("cStyle").textContent = state.style.n; }
+  function renderWear(){  $("bodyWear").innerHTML  = pickHTML(state.wear);  $("cWear").textContent  = state.wear.n; }
+  function renderTotal(){ $("cTotal").textContent = state.hair.n + state.style.n + state.wear.n; }
+  function renderAll(){ renderHair(); renderStyle(); renderWear(); renderTotal(); renderHistory(); }
+
+  function renderHistory(){
+    const ul = $("history");
+    ul.innerHTML = "";
+    $("histEmpty").style.display = state.history.length ? "none" : "";
+    state.history.forEach((h, i) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="n">#${state.history.length - i}</span>
+        <span class="dot" style="background:${h.hex}"></span><span>${h.hex}</span>
+        <span>髪型 ${h.s.page}P 縦${h.s.row}横${h.s.col}</span>
+        <span>ウェア ${h.w.page}P 縦${h.w.row}横${h.w.col}</span>`;
+      ul.appendChild(li);
+    });
+  }
+
+  /* ---------- ロール ---------- */
+  function rollHair(){ const h=state.hair; h.r=rnd(0,255); h.g=rnd(0,255); h.b=rnd(0,255); }
+  function rollPick(key){
+    const range = key==="style" ? readRange("hairMin","hairMax","hairErr") : readRange("wearMin","wearMax","wearErr");
+    if(!range) return false;
+    const p = state[key];
+    p.page = rnd(range[0], range[1]); p.row = rnd(1,5); p.col = rnd(1,5);
+    return true;
+  }
+
+  function animate(card, fn){
+    card.classList.add("rolling");
+    setTimeout(() => { card.classList.remove("rolling"); fn(); }, 260);
+  }
+
+  function pushHistory(){
+    if(!state.style.page || !state.wear.page) return;
+    state.history.unshift({
+      hex: hexOf(state.hair),
+      s: {page:state.style.page,row:state.style.row,col:state.style.col},
+      w: {page:state.wear.page,row:state.wear.row,col:state.wear.col}
+    });
+    state.history = state.history.slice(0,10);
+  }
+
+  function rollOne(key){
+    const first = key==="hair" ? !state.hair.hexRolled : !state[key].page;
+    if(key==="hair"){
+      state.hair.hexRolled = true;
+      if(!first) state.hair.n++;
+      rollHair();
+    }else{
+      if(!rollPick(key)) return;
+      if(!first) state[key].n++;
+    }
+    animate($(key==="hair"?"cardHair":key==="style"?"cardStyle":"cardWear"), () => {
+      renderAll(); pushHistory(); renderHistory(); save();
+    });
+  }
+
+  function rollAll(){
+    const a = readRange("hairMin","hairMax","hairErr"), b = readRange("wearMin","wearMax","wearErr");
+    if(!a || !b) return;
+    const firstTime = !state.hair.hexRolled && !state.style.page && !state.wear.page;
+    if(!firstTime){ state.hair.n++; state.style.n++; state.wear.n++; }
+    state.hair.hexRolled = true;
+    rollHair(); rollPick("style"); rollPick("wear");
+    ["cardHair","cardStyle","cardWear"].forEach(id => $(id).classList.add("rolling"));
+    setTimeout(() => {
+      ["cardHair","cardStyle","cardWear"].forEach(id => $(id).classList.remove("rolling"));
+      renderAll(); pushHistory(); renderHistory(); save();
+    }, 260);
+  }
+
+  /* ---------- シェア ---------- */
+  function siteUrl(){
+    if(SITE_URL) return SITE_URL;
+    return location.protocol.startsWith("http") ? location.origin + location.pathname : "（公開URL）";
+  }
+  function resultText(){
+    const h=state.hair, s=state.style, w=state.wear;
+    const total = h.n + s.n + w.n;
+    return [
+      `【${TITLE}】`,
+      `①髪色：${hexOf(h)}（R${h.r} G${h.g} B${h.b}）`,
+      `②髪型：${s.page}ページ 縦${s.row} 横${s.col}`,
+      `③ウェア：${w.page}ページ 縦${w.row} 横${w.col}`,
+      `リロール合計 ${total}回`
+    ].join("\n");
+  }
+  function ready(){
+    if(!state.hair.hexRolled || !state.style.page || !state.wear.page){
+      toast("先に「全部ふる！」で結果を出してください"); return false;
+    }
+    return true;
+  }
+  $("shareX").onclick = () => {
+    if(!ready()) return;
+    const text = resultText() + "\n" + HASHTAG;
+    const url = "https://x.com/intent/post?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(siteUrl());
+    window.open(url, "_blank", "noopener");
+  };
+  $("copyText").onclick = () => {
+    if(!ready()) return;
+    copy(resultText() + "\n" + HASHTAG + "\n" + siteUrl());
+  };
+  $("copyHex").onclick = () => { if(state.hair.hexRolled) copy(hexOf(state.hair)); else toast("先に髪色を出してください"); };
+
+  function copy(t){
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject())
+      .then(() => toast("コピーしました"))
+      .catch(() => toast("コピーできませんでした"));
+  }
+  let tt;
+  function toast(msg){
+    const el = $("toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(tt); tt = setTimeout(() => el.classList.remove("show"), 1800);
+  }
+
+  /* ---------- イベント ---------- */
+  $("rollAll").onclick = rollAll;
+  document.querySelectorAll("[data-roll]").forEach(b => b.onclick = () => rollOne(b.dataset.roll));
+  ["hairMin","hairMax","wearMin","wearMax"].forEach(id => $(id).addEventListener("change", () => {
+    readRange("hairMin","hairMax","hairErr"); readRange("wearMin","wearMax","wearErr"); save();
+  }));
+  $("clearHist").onclick = () => {
+    state.history = []; state.hair.n = state.style.n = state.wear.n = 0;
+    renderAll(); save(); toast("リセットしました");
+  };
+
+  load();
+  renderAll();
+})();
+</script>
+</body>
+</html>
